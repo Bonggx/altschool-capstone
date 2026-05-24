@@ -15,10 +15,7 @@
     "noUnusedLocals": false,
     "noUnusedParameters": false,
     "noFallthroughCasesInSwitch": true,
-    "paths": {
-      "../../convex/_generated/api": ["./convex/_generated/api"],
-      "../../convex/_generated/dataModel": ["./convex/_generated/dataModel"]
-    }
+    "types": ["vite/client"]
   },
   "include": ["src", "convex/_generated"]
 }

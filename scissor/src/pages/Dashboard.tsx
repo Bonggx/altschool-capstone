@@ -88,7 +88,7 @@ function StatsPanel({ linkId, userId }: { linkId: Id<"links">; userId: string })
           <p className="text-sm font-semibold text-gray-700 mb-2">Device breakdown</p>
           <ResponsiveContainer width="100%" height={160}>
             <PieChart>
-              <Pie data={deviceData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}>
+              <Pie data={deviceData} dataKey="value" nameKey="name" cx="50%" cy="50%" outerRadius={60} label={({ name, percent }) => `${name} ${((percent ?? 0) * 100).toFixed(0)}%`}>
                 {deviceData.map((_, i) => <Cell key={i} fill={DEVICE_COLORS[i % DEVICE_COLORS.length]} />)}
               </Pie>
               <Tooltip />
