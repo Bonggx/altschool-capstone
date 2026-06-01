@@ -6,6 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { signUpSchema, SignUpData } from "../lib/validations";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
+import { supabase } from "../lib/supabase";
 
 export default function SignUp() {
   const { signUp, signInWithGitHub } = useAuth();
