@@ -22,6 +22,7 @@ export default function Profile() {
   const [showFollowing, setShowFollowing] = useState(false);
   const [followersList, setFollowersList] = useState<any[]>([]);
   const [followingList, setFollowingList] = useState<any[]>([]);
+  const [showPrompt, setShowPrompt] = useState(false);
 
   useEffect(() => {
     if (username) fetchProfile();
@@ -110,8 +111,6 @@ export default function Profile() {
 
   const isOwnProfile = user?.id === profile.id;
 
-  // Show sign in prompt state for guest users
-  const [showPrompt, setShowPrompt] = useState(false);
   const followButtonLabel = following ? "Unfollow" : followsMe ? "Follow back" : "Follow";
 
   return (
