@@ -4,18 +4,13 @@ import { useAuth } from "../../hooks/useAuth";
 import { supabase } from "../../lib/supabase";
 import Button from "../ui/Button";
 
-// Shows public links always; shows admin link only for admin users
-// Collapses into a hamburger menu on mobile
-
 export default function Navbar() {
   const { user, profile, isAdmin } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [menuOpen, setMenuOpen] = useState(false);
 
-  function closeMenu() {
-    setMenuOpen(false);
-  }
+  function closeMenu() { setMenuOpen(false); }
 
   async function handleSignOut() {
     await supabase.auth.signOut();
@@ -23,9 +18,7 @@ export default function Navbar() {
     closeMenu();
   }
 
-  function isActive(path: string) {
-    return location.pathname === path;
-  }
+  function isActive(path: string) { return location.pathname === path; }
 
   const navLinkClass = (path: string) =>
     `text-sm font-medium transition-colors duration-150 ${
@@ -33,6 +26,11 @@ export default function Navbar() {
         ? "text-brand-600 border-b-2 border-brand-400 pb-0.5"
         : "text-gray-600 hover:text-brand-600"
     }`;
+
+  // Get initials from full name or email
+  const initials = profile?.full_name
+    ? profile.full_name.split(" ").map((n: string) => n[0]).join("").toUpperCase().slice(0, 2)
+    : user?.email?.[0]?.toUpperCase() ?? "?";
 
   return (
     <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-brand-100 shadow-sm">
@@ -75,8 +73,8 @@ export default function Navbar() {
           {user ? (
             <div className="flex items-center gap-3">
               <Link to="/profile" className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-brand-50 hover:bg-brand-100 transition-colors">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-brand-300 to-brand-500 flex items-center justify-center text-white text-xs font-bold">
-                  {profile?.full_name?.[0]?.toUpperCase() ?? user.email?.[0]?.toUpperCase()}
+                <div className="w-7 h-7 rounded-full bg-gradient-to-br from-brand-300 to-brand-500 flex items-center justify-center text-white text-xs font-bold">
+                  {initials}
                 </div>
                 <span className="text-sm font-medium text-gray-700">
                   {profile?.full_name?.split(" ")[0] ?? "Account"}
@@ -92,22 +90,34 @@ export default function Navbar() {
           )}
         </div>
 
-        {/* Mobile hamburger */}
-        <button
-          className="md:hidden p-2 rounded-lg hover:bg-brand-50 transition-colors text-gray-600"
-          onClick={() => setMenuOpen(!menuOpen)}
-          aria-label="Toggle menu"
-        >
-          {menuOpen ? (
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          ) : (
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+        {/* Mobile right side — avatar + hamburger */}
+        <div className="md:hidden flex items-center gap-2">
+          {/* Avatar initial — only shown when signed in */}
+          {user && (
+            <Link to="/profile" onClick={closeMenu}>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-brand-300 to-brand-500 flex items-center justify-center text-white text-xs font-bold shadow-sm">
+                {initials}
+              </div>
+            </Link>
           )}
-        </button>
+
+          {/* Hamburger */}
+          <button
+            className="p-2 rounded-lg hover:bg-brand-50 transition-colors text-gray-600"
+            onClick={() => setMenuOpen(!menuOpen)}
+            aria-label="Toggle menu"
+          >
+            {menuOpen ? (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            ) : (
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            )}
+          </button>
+        </div>
       </nav>
 
       {/* Mobile dropdown */}
@@ -116,16 +126,20 @@ export default function Navbar() {
           <Link to="/search" onClick={closeMenu} className="text-sm font-medium text-gray-700 hover:text-brand-600">Find Hospitals</Link>
           <Link to="/map" onClick={closeMenu} className="text-sm font-medium text-gray-700 hover:text-brand-600">Map View</Link>
           {isAdmin && (
-            <Link to="/admin" onClick={closeMenu} className="text-sm font-semibold text-brand-600 ">Admin Dashboard</Link>
+            <Link to="/admin" onClick={closeMenu} className="text-sm font-semibold text-brand-600">Admin Dashboard</Link>
           )}
           <div className="border-t border-brand-100 pt-3 flex flex-col gap-2">
             {user ? (
               <>
-                <Link to="/profile" onClick={closeMenu} className="text-sm font-medium text-gray-700 hover:text-brand-600">
+                <p className="text-sm text-gray-500">
+                  Signed in as <strong>{profile?.full_name ?? user.email}</strong>
+                </p>
+                <Link to="/profile" onClick={closeMenu} className="text-sm font-medium text-brand-600 hover:text-brand-800">
                   My Profile
                 </Link>
-                <p className="text-sm text-gray-500">Signed in as <strong>{profile?.full_name ?? user.email}</strong></p>
-                <Button variant="secondary" size="sm" onClick={handleSignOut} className="w-full">Sign out</Button>
+                <Button variant="secondary" size="sm" onClick={handleSignOut} className="w-full">
+                  Sign out
+                </Button>
               </>
             ) : (
               <>
