@@ -1,0 +1,47 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=Playfair+Display:wght@700;900&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: "DM Sans", system-ui, sans-serif;
+  background-color: #fff8fa;
+  color: #1a1a2e;
+}
+
+/* Force black text in all input fields */
+input:not([type="color"]),
+textarea,
+select {
+  color: #1a1a2e !important;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #94a3b8 !important;
+}
+
+/* Mapbox map container */
+.mapboxgl-map {
+  border-radius: 1rem;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #fff0f3;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #ffc2d1;
+  border-radius: 3px;
+}
