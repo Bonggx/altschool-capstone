@@ -18,8 +18,13 @@ import { supabase } from "./lib/supabase";
 function AuthCallback() {
   const navigate = useNavigate();
   useEffect(() => {
-    supabase.auth.getSession().then(() => {
-      navigate("/", { replace: true });
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        // Force full reload so AuthContext picks up the session
+        window.location.href = "/";
+      } else {
+        navigate("/signin", { replace: true });
+      }
     });
   }, []);
   return (

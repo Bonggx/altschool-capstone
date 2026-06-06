@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -15,7 +15,6 @@ const schema = z.object({
 type FormData = z.infer<typeof schema>;
 
 export default function SignIn() {
-  const navigate = useNavigate();
   const [error, setError] = useState<string | null>(null);
 
   const { register, handleSubmit, formState: { errors, isSubmitting } } = useForm<FormData>({
@@ -28,22 +27,25 @@ export default function SignIn() {
       email: data.email,
       password: data.password,
     });
-    if (authError) setError(authError.message);
-    else navigate("/");
+    if (authError) {
+      setError(authError.message);
+    } else {
+      // Force full page reload so AuthContext picks up the new session
+      window.location.href = "/";
+    }
   }
 
   async function handleGoogle() {
-  await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: { redirectTo: `${window.location.origin}/auth/callback` },
-  });
-}
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: `${window.location.origin}/auth/callback` },
+    });
+  }
 
   return (
     <main className="min-h-[80vh] flex items-center justify-center px-4 bg-gradient-to-br from-brand-50 to-white">
       <div className="w-full max-w-md">
 
-        {/* Header */}
         <div className="text-center mb-8">
           <Link to="/" className="font-serif text-2xl font-bold text-gray-900 hover:text-brand-600">
             Care<span className="text-brand-500">finder</span>
@@ -54,7 +56,6 @@ export default function SignIn() {
 
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
 
-          {/* Google OAuth */}
           <button
             onClick={handleGoogle}
             className="w-full flex items-center justify-center gap-3 px-4 py-2.5 border border-gray-200 rounded-xl text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors mb-5"
@@ -74,7 +75,6 @@ export default function SignIn() {
             <div className="flex-1 h-px bg-gray-100" />
           </div>
 
-          {/* Email form */}
           <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-4">
             <Input label="Email" type="email" placeholder="you@example.com"
               error={errors.email?.message} {...register("email")} />
