@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { supabase, getStorageUrl } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 import Button from "../components/ui/Button";
 import Input from "../components/ui/Input";
 
@@ -10,8 +10,6 @@ export default function Profile() {
   const { user, profile, refreshProfile } = useAuth();
 
   const [fullName, setFullName] = useState("");
-  const [avatarFile, setAvatarFile] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [success, setSuccess] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -23,16 +21,8 @@ export default function Profile() {
   useEffect(() => {
     if (profile) {
       setFullName(profile.full_name ?? "");
-      setAvatarPreview(profile.avatar_url ?? null);
     }
   }, [profile]);
-
-  function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
-  }
 
   async function handleSave() {
     if (!user) return;
@@ -40,35 +30,17 @@ export default function Profile() {
     setError(null);
     setSuccess(false);
 
-    let avatarUrl = profile?.avatar_url ?? null;
-
-    if (avatarFile) {
-      const ext = avatarFile.name.split(".").pop();
-      const path = `avatars/${user.id}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from("carefinder")
-        .upload(path, avatarFile, { upsert: true });
-      if (!uploadError) avatarUrl = getStorageUrl("carefinder", path);
-      else {
-        setError("Failed to upload photo. Please try again.");
-        setSaving(false);
-        return;
-      }
-    }
-
     const { error: updateError } = await supabase
       .from("profiles")
-      .update({ full_name: fullName, avatar_url: avatarUrl })
+      .update({ full_name: fullName })
       .eq("id", user.id);
 
     if (updateError) {
       setError(updateError.message);
     } else {
       setSuccess(true);
-      setAvatarFile(null);
       await refreshProfile();
     }
-
     setSaving(false);
   }
 
@@ -79,46 +51,29 @@ export default function Profile() {
 
   if (!user) return null;
 
+  // Get initials from full name or email
+  const initials = fullName
+    ? fullName.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2)
+    : user.email?.[0]?.toUpperCase() ?? "?";
+
   return (
     <div className="max-w-xl mx-auto px-4 sm:px-6 py-10">
       <h1 className="font-serif text-3xl font-bold text-gray-900 mb-8">Your Profile</h1>
 
       <div className="bg-white border border-gray-100 rounded-2xl shadow-sm p-6 flex flex-col gap-6">
 
-        <div className="flex items-center gap-5">
-          <div className="relative">
-            {avatarPreview ? (
-              <img
-                src={avatarPreview}
-                alt="Avatar"
-                className="w-16 h-16 rounded-full object-cover border-2 border-brand-200"
-              />
-            ) : (
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-300 to-brand-500 flex items-center justify-center text-white text-xl font-bold">
-                {fullName?.[0]?.toUpperCase() ?? user.email?.[0]?.toUpperCase()}
-              </div>
-            )}
+        {/* Avatar — initials only, no upload */}
+        <div className="flex items-center gap-4">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-br from-brand-300 to-brand-500 flex items-center justify-center text-white text-xl font-bold flex-shrink-0">
+            {initials}
           </div>
-          <label className="cursor-pointer text-sm font-medium text-brand-600 hover:text-brand-800 transition-colors">
-            Change photo
-            <input type="file" accept="image/*" onChange={handleAvatarChange} className="hidden" />
-          </label>
+          <div>
+            <p className="font-serif text-lg font-bold text-gray-900">{fullName || "Your Name"}</p>
+            <p className="text-sm text-gray-400">{user.email}</p>
+          </div>
         </div>
 
-        <Input
-          label="Full name"
-          value={fullName}
-          onChange={(e) => setFullName(e.target.value)}
-        />
-
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-          <p className="text-sm text-gray-400 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2">
-            {user.email}
-          </p>
-        </div>
-
-        {/* Show admin badge if user is admin */}
+        {/* Admin badge */}
         {profile?.role === "admin" && (
           <div className="flex items-center gap-2 px-3 py-2 bg-brand-50 border border-brand-200 rounded-xl">
             <svg className="w-4 h-4 text-brand-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -128,6 +83,21 @@ export default function Profile() {
             <span className="text-sm font-medium text-brand-600">Admin account</span>
           </div>
         )}
+
+        {/* Name field */}
+        <Input
+          label="Full name"
+          value={fullName}
+          onChange={(e) => setFullName(e.target.value)}
+        />
+
+        {/* Email — read only */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
+          <p className="text-sm text-gray-400 bg-gray-50 border border-gray-100 rounded-xl px-3 py-2">
+            {user.email}
+          </p>
+        </div>
 
         {success && (
           <p className="text-sm text-green-600 bg-green-50 border border-green-100 rounded-xl px-3 py-2">
