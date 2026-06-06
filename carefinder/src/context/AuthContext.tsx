@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { User } from "@supabase/supabase-js";
+import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
 
 interface AuthContextType {
@@ -32,31 +32,32 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (data) setProfile(data);
   }
 
+  async function handleSession(session: Session | null) {
+    if (session?.user) {
+      setUser(session.user);
+      await fetchProfile(session.user.id);
+    } else {
+      setUser(null);
+      setProfile(null);
+    }
+    setLoading(false);
+  }
+
   async function refreshProfile() {
     const { data: { session } } = await supabase.auth.getSession();
     if (session?.user) await fetchProfile(session.user.id);
   }
 
   useEffect(() => {
-    // Immediately check for existing session from localStorage
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (session?.user) {
-        setUser(session.user);
-        await fetchProfile(session.user.id);
-      }
-      setLoading(false);
+    // Read existing session immediately on mount
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      handleSession(session);
     });
 
-    // Also listen for future auth changes
+    // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setUser(session?.user ?? null);
-        if (session?.user) {
-          await fetchProfile(session.user.id);
-        } else {
-          setProfile(null);
-        }
-        setLoading(false);
+      (_event, session) => {
+        handleSession(session);
       }
     );
 
