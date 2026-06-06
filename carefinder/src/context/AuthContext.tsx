@@ -38,16 +38,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   useEffect(() => {
-    // Get existing session on mount first
+    // Immediately check for existing session from localStorage
     supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setUser(session?.user ?? null);
-      if (session?.user) await fetchProfile(session.user.id);
+      if (session?.user) {
+        setUser(session.user);
+        await fetchProfile(session.user.id);
+      }
       setLoading(false);
     });
 
-    // Then listen for changes
+    // Also listen for future auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         setUser(session?.user ?? null);
         if (session?.user) {
           await fetchProfile(session.user.id);
@@ -57,6 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
     );
+
     return () => subscription.unsubscribe();
   }, []);
 
