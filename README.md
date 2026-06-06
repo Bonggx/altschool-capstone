@@ -10,6 +10,6 @@ This repository contains three full-stack projects built for the AltSchool Front
 
 ## Live Links
 
-- Chatter: coming soon
-- Scissor: coming soon
-- Carefinder: coming soon
+- Chatter: https://chatter-altschool.vercel.app
+- Scissor: https://scissor-altschool.vercel.app
+- Carefinder: https://carefinder-altschool.vercel.app
