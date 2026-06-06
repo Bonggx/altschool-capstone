@@ -33,7 +33,7 @@ export default function MapView() {
 
     map.current = new mapboxgl.Map({
       container: mapContainer.current,
-      style: "mapbox://styles/mapbox/light-v11",
+      style: "mapbox://styles/mapbox/streets-v12",
       center: [8.6753, 9.082],
       zoom: 5.5,
     });
